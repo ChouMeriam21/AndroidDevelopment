@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MyFirstApplication</string>
+    <string name="nom">Nom</string>
+    <string name="pr_nom">Prénom</string>
+    <string name="date_de_naissance">Date de naissance</string>
+    <string name="ville_de_naissance">Ville de naissance</string>
+    <string name="reset_action">Reset</string>
+    <string name="validate">VALIDATE</string>
+    <string name="tel">Téléphone</string>
+    <string name="ajouter">AJOUTER UN NUM</string>
+    <string name="departement">Département de naissance</string>
+    <string name="vide"></string>
+</resources>
