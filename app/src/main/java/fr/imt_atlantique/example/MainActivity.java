@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -14,13 +15,18 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.lang.reflect.Array;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
@@ -37,6 +43,18 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     private LinearLayout layout;
     private Spinner txtDepartement;
+
+    private SharedPreferences utilisateur;
+
+    private String NomUtilisateur;
+    private String PrenomUtilisateur;
+    private String VilleUtilisateur;
+    private String DateUtilisateur;
+    private String DepUtilisateur;
+    private Set<String> TelUtilisateur;
+
+    private Set<String> telSet;
+
 
 
     @Override
@@ -55,6 +73,57 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         txtTel = (EditText) findViewById(R.id.txtNumTel);
         layout = (LinearLayout)findViewById(R.id.linearLayout);
         txtDepartement = (Spinner) findViewById(R.id.txtDepartement);
+        telSet = new HashSet<String>();
+
+        utilisateur= getSharedPreferences("utilisateur", Context.MODE_PRIVATE);
+        NomUtilisateur= utilisateur.getString("nom","");
+        PrenomUtilisateur= utilisateur.getString("prenom","");
+        DateUtilisateur= utilisateur.getString("date","");
+        VilleUtilisateur= utilisateur.getString("ville","");
+        DepUtilisateur= utilisateur.getString("departement","Côte d'Armor");
+        TelUtilisateur=utilisateur.getStringSet("tel", (Set<String>) new HashSet<String>());
+
+        txtNom.setText(NomUtilisateur);
+        txtPrenom.setText(PrenomUtilisateur);
+        txtDateNaissance.setText(DateUtilisateur);
+        txtVilleNaissance.setText(VilleUtilisateur);
+        txtDepartement.setSelection(2);
+        //txtDepartement.setSelection(DepUtilisateur);
+
+        //displaying telephone numbers we get from preferences xml file
+        for (int i=0; i<TelUtilisateur.toArray().length; i++){
+            txtTel.setText((String) Array.get(TelUtilisateur.toArray(),i));
+            Log.i("r",(String) Array.get(TelUtilisateur.toArray(),i));
+            //btnAjouter.callOnClick();
+            String txtTelText = (String) Array.get(TelUtilisateur.toArray(),i);
+            telSet.add(txtTelText);
+            Log.i("rtelSet",(String) Array.get(telSet.toArray(),i));
+            LinearLayout subLayout = new LinearLayout(getBaseContext());
+            subLayout.setOrientation(LinearLayout.HORIZONTAL);
+            Button delete = new Button(getBaseContext());
+            delete.setText("SUPPRIMER");
+            TextView text = new TextView(getBaseContext());
+            text.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            text.setText(txtTelText);
+            Log.i("rtext",text.getText().toString());
+            subLayout.addView(text);
+            //subLayout.addView(delete);
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams)layout.getLayoutParams();
+            int newHeight = layout.getHeight() + dpToPx(80);
+            layoutParams.height = newHeight;
+            layout.setLayoutParams(layoutParams);
+            layout.addView(subLayout);
+            delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    telSet.remove(txtTelText);
+                    layout.removeView((View) delete.getParent());
+                    int newHeight = layout.getHeight() - dpToPx(80);
+                    layoutParams.height = newHeight;
+                    layout.setLayoutParams(layoutParams);
+                }
+            });
+        }
 
         btnValidate.setOnClickListener(new View.OnClickListener() {
             public void onClick (View v) {
@@ -74,9 +143,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
         });
 
-        btnAjouter.setOnClickListener(new View.OnClickListener() {
+         btnAjouter.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String txtTelText = txtTel.getText().toString();
+                telSet.add(txtTelText);
                 LinearLayout subLayout = new LinearLayout(getBaseContext());
                 subLayout.setOrientation(LinearLayout.HORIZONTAL);
                 Button delete = new Button(getBaseContext());
@@ -85,22 +155,24 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 text.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                 text.setText(txtTelText);
                 subLayout.addView(text);
-                subLayout.addView(delete);
+
                 LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams)layout.getLayoutParams();
-                int newHeight = layout.getHeight() + dpToPx(45);
+                int newHeight = layout.getHeight() + dpToPx(80);
                 layoutParams.height = newHeight;
                 layout.setLayoutParams(layoutParams);
-                layout.addView(subLayout);
+                //layout.addView(subLayout);
                 delete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        telSet.remove(txtTelText);
                         layout.removeView((View) delete.getParent());
-                        int newHeight = layout.getHeight() - dpToPx(45);
+                        int newHeight = layout.getHeight() - dpToPx(80);
                         layoutParams.height = newHeight;
                         layout.setLayoutParams(layoutParams);
                     }
                 });
+                //subLayout.addView(delete);
+                layout.addView(subLayout);
             }
         });
 
@@ -110,7 +182,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
 
         });
+
     }
+
 
     private void showDatePickerDialog(){
         DatePickerDialog datePickerDialog=new DatePickerDialog(
@@ -165,6 +239,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     protected void onStop() {
         super.onStop();
         Log.i("Lifecycle", "onStop method");
+        SharedPreferences.Editor pfe = utilisateur.edit();
+        pfe.putString("nom", txtNom.getText().toString());
+        pfe.putString("prenom", txtPrenom.getText().toString());
+        pfe.putString("date", txtDateNaissance.getText().toString());
+        pfe.putString("ville", txtVilleNaissance.getText().toString());
+        //pfe.putInt("departement", txtDepartement.getSelectedItemPosition());
+        pfe.putStringSet("tel", telSet );
+        pfe.apply();
     }
 
     protected void onResume() {
@@ -172,8 +254,16 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         Log.i("Lifecycle", "onResume method");
     }
 
+    private void setTelSet() {
+        int i = layout.getChildCount();
+        for (int j = 0; j<i; j++) {
+
+        }
+    }
+
     protected void onDestroy() {
         super.onDestroy();
         Log.i("Lifecycle", "onDestroy method");
+
     }
 }
