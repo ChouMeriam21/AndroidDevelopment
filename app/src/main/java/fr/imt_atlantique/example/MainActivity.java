@@ -4,18 +4,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -25,14 +25,13 @@ import com.google.android.material.snackbar.Snackbar;
 import java.lang.reflect.Array;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
     private EditText txtNom = null;
     private EditText txtPrenom = null;
-    private EditText txtDateNaissance = null;
+    private TextView txtDateNaissance = null;
 
     private Button btnCalendar;
     private EditText txtVilleNaissance = null;
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private String PrenomUtilisateur;
     private String VilleUtilisateur;
     private String DateUtilisateur;
-    private String DepUtilisateur;
+    private int DepUtilisateur;
     private Set<String> TelUtilisateur;
 
     private Set<String> telSet;
@@ -65,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         txtNom = (EditText) findViewById(R.id.txtNom);
         txtPrenom = (EditText) findViewById(R.id.txtPrenom);
-        txtDateNaissance = (EditText) findViewById(R.id.txtDateNaissance);
+        txtDateNaissance = (TextView) findViewById(R.id.txtDateNaissance);
         btnCalendar = (Button) findViewById(R.id.btnDate);
         txtVilleNaissance = (EditText) findViewById(R.id.txtVilleNaissance);
         btnValidate = (Button) findViewById(R.id.btnValidate);
@@ -80,17 +79,23 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         PrenomUtilisateur= utilisateur.getString("prenom","");
         DateUtilisateur= utilisateur.getString("date","");
         VilleUtilisateur= utilisateur.getString("ville","");
-        DepUtilisateur= utilisateur.getString("departement","Côte d'Armor");
+        DepUtilisateur= utilisateur.getInt("department",0);
         TelUtilisateur=utilisateur.getStringSet("tel", (Set<String>) new HashSet<String>());
 
         txtNom.setText(NomUtilisateur);
         txtPrenom.setText(PrenomUtilisateur);
-        txtDateNaissance.setText(DateUtilisateur);
+        //txtDateNaissance.setText(DateUtilisateur);
         txtVilleNaissance.setText(VilleUtilisateur);
-        txtDepartement.setSelection(2);
-        //txtDepartement.setSelection(DepUtilisateur);
+        //txtDepartement.setSelection(2);
+        txtDepartement.setSelection(DepUtilisateur);
 
         //displaying telephone numbers we get from preferences xml file
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams)layout.getLayoutParams();
+        int count = TelUtilisateur.toArray().length;
+        int newHeight = layout.getHeight() + count * dpToPx(60);
+        layoutParams.height = newHeight;
+        layout.setLayoutParams(layoutParams);
+
         for (int i=0; i<TelUtilisateur.toArray().length; i++){
             txtTel.setText((String) Array.get(TelUtilisateur.toArray(),i));
             Log.i("r",(String) Array.get(TelUtilisateur.toArray(),i));
@@ -101,26 +106,38 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             LinearLayout subLayout = new LinearLayout(getBaseContext());
             subLayout.setOrientation(LinearLayout.HORIZONTAL);
             Button delete = new Button(getBaseContext());
+            Button compose = new Button(getBaseContext());
             delete.setText("SUPPRIMER");
+            compose.setText("COMPOSER");
             TextView text = new TextView(getBaseContext());
             text.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             text.setText(txtTelText);
             Log.i("rtext",text.getText().toString());
             subLayout.addView(text);
-            //subLayout.addView(delete);
-            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams)layout.getLayoutParams();
-            int newHeight = layout.getHeight() + dpToPx(80);
+            subLayout.addView(delete);
+            subLayout.addView(compose);
+            /**LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams)layout.getLayoutParams();
+            int newHeight = layout.getHeight() + dpToPx(60);
             layoutParams.height = newHeight;
-            layout.setLayoutParams(layoutParams);
+            layout.setLayoutParams(layoutParams);**/
             layout.addView(subLayout);
+            //Log.i("Layout Height", String.valueOf(newHeight));
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     telSet.remove(txtTelText);
                     layout.removeView((View) delete.getParent());
-                    int newHeight = layout.getHeight() - dpToPx(80);
+                    int newHeight = layout.getHeight() - dpToPx(60);
                     layoutParams.height = newHeight;
                     layout.setLayoutParams(layoutParams);
+                }
+            });
+
+            compose.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + txtTelText));
+                    startActivity(intent);
                 }
             });
         }
@@ -140,6 +157,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 TextView snackTextView = (TextView) snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
                 snackTextView.setMaxLines(6);
                 b1.show();
+
+                Intent intent = new Intent(MainActivity.this, DisplayUserActivity.class);
+                User user = new User(txtNom.getText().toString(), txtPrenom.getText().toString(), txtDateNaissance.getText().toString(),
+                        txtVilleNaissance.getText().toString(),txtDepartement.getSelectedItem().toString(), (String[]) telSet.toArray(new String[telSet.size()]));
+                intent.putExtra("user",user);
+                startActivity(intent);
             }
         });
 
@@ -150,39 +173,80 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 LinearLayout subLayout = new LinearLayout(getBaseContext());
                 subLayout.setOrientation(LinearLayout.HORIZONTAL);
                 Button delete = new Button(getBaseContext());
+                Button compose = new Button(getBaseContext());
                 delete.setText("SUPPRIMER");
+                compose.setText("COMPOSER");
                 TextView text = new TextView(getBaseContext());
                 text.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                 text.setText(txtTelText);
                 subLayout.addView(text);
-
+                subLayout.addView(delete);
+                subLayout.addView(compose);
                 LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams)layout.getLayoutParams();
-                int newHeight = layout.getHeight() + dpToPx(80);
+                int newHeight = layout.getHeight() + dpToPx(60);
                 layoutParams.height = newHeight;
                 layout.setLayoutParams(layoutParams);
-                //layout.addView(subLayout);
+                layout.addView(subLayout);
                 delete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         telSet.remove(txtTelText);
                         layout.removeView((View) delete.getParent());
-                        int newHeight = layout.getHeight() - dpToPx(80);
+                        int newHeight = layout.getHeight() - dpToPx(60);
                         layoutParams.height = newHeight;
                         layout.setLayoutParams(layoutParams);
                     }
                 });
-                //subLayout.addView(delete);
-                layout.addView(subLayout);
+
+                compose.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + txtTelText));
+                        startActivity(intent);
+                    }
+                });
+                txtTel.setText("");
             }
         });
 
         btnCalendar.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                showDatePickerDialog();
+                //showDatePickerDialog();
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                startActivity(intent);
             }
-
         });
 
+        getDateFromActivity();
+
+    }
+
+
+
+    public void getDateFromActivity() {
+        String code = getIntent().getStringExtra("code");
+        String dat = getIntent().getStringExtra("date");
+        String codeOk= "RESULT_OK";
+        if (code == null) {
+            Log.i("null", "wayli null");
+            txtDateNaissance.setText(DateUtilisateur);
+        }
+
+        else if (code.equals(codeOk)) {
+            String date = getIntent().getStringExtra("date");
+            txtDateNaissance.setText(date);
+            Log.i("code",code);
+            Log.i("date",date);
+        }
+        else {
+            Log.i("null", "wayli non null");
+            Boolean bool= code == codeOk;
+            Log.i("null", String.valueOf(bool));
+            Log.i("code", code);
+            Log.i("type code", String.valueOf(code.getClass()));
+            Log.i("type codeOk", String.valueOf(codeOk.getClass()));
+            txtDateNaissance.setText(DateUtilisateur);
+        }
     }
 
 
@@ -214,11 +278,30 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         txtDateNaissance.setText("");
         txtVilleNaissance.setText("");
         txtTel.setText("");
+        txtDepartement.setSelection(0);
         layout.removeAllViewsInLayout();
         LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams)layout.getLayoutParams();
         layoutParams.height = dpToPx(45);
         layout.setLayoutParams(layoutParams);
+        telSet = new HashSet<String>();
     }
+
+    public void invokeWiki(MenuItem item) {
+        Uri uri = Uri.parse("http://fr.wikipedia.org/?search="+txtVilleNaissance.getText().toString());
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
+    }
+
+    public void shareVilleNaissance(MenuItem item) {
+        String text = txtVilleNaissance.getText().toString();
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        //shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+        startActivity(Intent.createChooser(shareIntent, "Partager votre ville de naissance avec :"));
+        //startActivity(shareIntent);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -229,41 +312,41 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     protected void onStart() {
         super.onStart();
         Log.i("Lifecycle", "onStart method");
+        getDateFromActivity();
     }
 
     protected void onPause() {
         super.onPause();
         Log.i("Lifecycle", "onPause method");
+        Save();
     }
 
     protected void onStop() {
         super.onStop();
         Log.i("Lifecycle", "onStop method");
-        SharedPreferences.Editor pfe = utilisateur.edit();
-        pfe.putString("nom", txtNom.getText().toString());
-        pfe.putString("prenom", txtPrenom.getText().toString());
-        pfe.putString("date", txtDateNaissance.getText().toString());
-        pfe.putString("ville", txtVilleNaissance.getText().toString());
-        //pfe.putInt("departement", txtDepartement.getSelectedItemPosition());
-        pfe.putStringSet("tel", telSet );
-        pfe.apply();
+        Save();
     }
 
     protected void onResume() {
         super.onResume();
         Log.i("Lifecycle", "onResume method");
-    }
-
-    private void setTelSet() {
-        int i = layout.getChildCount();
-        for (int j = 0; j<i; j++) {
-
-        }
+        getDateFromActivity();
     }
 
     protected void onDestroy() {
         super.onDestroy();
         Log.i("Lifecycle", "onDestroy method");
+        Save();
+    }
 
+    public void Save() {
+        SharedPreferences.Editor pfe = utilisateur.edit();
+        pfe.putString("nom", txtNom.getText().toString());
+        pfe.putString("prenom", txtPrenom.getText().toString());
+        pfe.putString("date", txtDateNaissance.getText().toString());
+        pfe.putString("ville", txtVilleNaissance.getText().toString());
+        pfe.putInt("department", txtDepartement.getSelectedItemPosition());
+        pfe.putStringSet("tel", telSet );
+        pfe.apply();
     }
 }

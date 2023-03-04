@@ -10,4 +10,8 @@
     <string name="ajouter">AJOUTER UN NUM</string>
     <string name="departement">Département de naissance</string>
     <string name="vide"></string>
+    <string name="wiki">Wikipédia Ville de Naissance</string>
+    <string name="share">Partager Ville de Naissance</string>
+    <string name="cancel">CANCEL</string>
+    <string name="pickDateActivity">PICK</string>
 </resources>

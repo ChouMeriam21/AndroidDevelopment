@@ -4,4 +4,12 @@
         android:title="@string/reset_action"
         android:onClick="resetAction">
     </item>
+    <item android:id="@+id/invokeWiki"
+        android:title="@string/wiki"
+        android:onClick="invokeWiki">
+    </item>
+    <item android:id="@+id/share"
+        android:title="@string/share"
+        android:onClick="shareVilleNaissance">
+    </item>
 </menu>
