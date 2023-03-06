@@ -14,4 +14,5 @@
     <string name="share">Partager Ville de Naissance</string>
     <string name="cancel">CANCEL</string>
     <string name="pickDateActivity">PICK</string>
+    <string name="takePicture">PRENDRE PHOTO</string>
 </resources>

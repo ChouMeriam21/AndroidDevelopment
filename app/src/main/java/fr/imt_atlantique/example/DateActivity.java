@@ -43,11 +43,13 @@ public class DateActivity extends AppCompatActivity implements DatePickerDialog.
             public void onClick(View v) {
                 String textDate = text.getText().toString();
                 String code = "RESULT_OK";
-                Intent intent = new Intent(DateActivity.this, MainActivity.class);
+                //Intent intent = new Intent(DateActivity.this, MainActivity.class);
+                Intent intent = getIntent();
                 intent.putExtra("date",textDate);
                 //intent.putExtra("code",code);
                 //startActivity(intent);
-                startActivityForResult(intent, RESULT_OK);
+                setResult(RESULT_OK, intent);
+                finish();
             }
         });
 
@@ -55,10 +57,12 @@ public class DateActivity extends AppCompatActivity implements DatePickerDialog.
             @Override
             public void onClick(View v) {
                 String code = "RESULT_CANCEL";
-                Intent intent = new Intent(DateActivity.this, MainActivity.class);
+                //Intent intent = new Intent(DateActivity.this, MainActivity.class);
+                Intent intent = getIntent();
                 //intent.putExtra("code",code);
                 //startActivity(intent);
-                startActivityForResult(intent, RESULT_CANCELED);
+                setResult(RESULT_CANCELED, intent);
+                finish();
             }
         });
     }

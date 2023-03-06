@@ -2,12 +2,15 @@ package fr.imt_atlantique.example;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -54,6 +57,13 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     private Set<String> telSet;
 
+    private Button btnPicture;
+
+    private String imgPath = null;
+
+    private Uri image = null;
+    private static final int SECOND_ACTIVITY_REQUEST_CODE = 0;
+
 
 
     @Override
@@ -73,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         layout = (LinearLayout)findViewById(R.id.linearLayout);
         txtDepartement = (Spinner) findViewById(R.id.txtDepartement);
         telSet = new HashSet<String>();
+        btnPicture = (Button) findViewById(R.id.btnPicture);
 
         utilisateur= getSharedPreferences("utilisateur", Context.MODE_PRIVATE);
         NomUtilisateur= utilisateur.getString("nom","");
@@ -159,6 +170,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 b1.show();
 
                 Intent intent = new Intent(MainActivity.this, DisplayUserActivity.class);
+                if(image != null) {
+                    intent.putExtra("image", String.valueOf(image));
+                }
                 User user = new User(txtNom.getText().toString(), txtPrenom.getText().toString(), txtDateNaissance.getText().toString(),
                         txtVilleNaissance.getText().toString(),txtDepartement.getSelectedItem().toString(), (String[]) telSet.toArray(new String[telSet.size()]));
                 intent.putExtra("user",user);
@@ -213,17 +227,53 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             public void onClick(View v) {
                 //showDatePickerDialog();
                 Intent intent = new Intent(Intent.ACTION_PICK);
-                startActivity(intent);
+                /**startActivity(intent);**/
+                startActivityForResult(intent, SECOND_ACTIVITY_REQUEST_CODE);
             }
         });
 
-        getDateFromActivity();
+        btnPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent pictureIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(pictureIntent, 2);
+            }
+        });
+
+        /**onActivityResult();**/
 
     }
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.i("requestCode", String.valueOf(resultCode == Activity.RESULT_OK));
+        if(requestCode == SECOND_ACTIVITY_REQUEST_CODE) {
+            if(resultCode == Activity.RESULT_OK) {
+                String date = data.getStringExtra("date");
+                Log.i("date", String.valueOf(date));
+                txtDateNaissance.setText(date);
+            }
+            else {
+                txtDateNaissance.setText(DateUtilisateur);
+            }
+        }
+        if(requestCode == 2) {
+            if(resultCode == Activity.RESULT_OK) {
+                image = data.getData();
+                String[] filePath = {MediaStore.Images.Media.DATA};
+                Cursor cursor = this.getContentResolver().query(image, filePath, null, null,null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePath[0]);
+                imgPath = cursor.getString(columnIndex);
+                cursor.close();
+            }
+        }
+    }
 
-    public void getDateFromActivity() {
+
+    /**public void getDateFromActivity() {
         String code = getIntent().getStringExtra("code");
         String dat = getIntent().getStringExtra("date");
         String codeOk= "RESULT_OK";
@@ -247,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             Log.i("type codeOk", String.valueOf(codeOk.getClass()));
             txtDateNaissance.setText(DateUtilisateur);
         }
-    }
+    }**/
 
 
     private void showDatePickerDialog(){
@@ -312,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     protected void onStart() {
         super.onStart();
         Log.i("Lifecycle", "onStart method");
-        getDateFromActivity();
+        /**getDateFromActivity();**/
     }
 
     protected void onPause() {
@@ -330,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     protected void onResume() {
         super.onResume();
         Log.i("Lifecycle", "onResume method");
-        getDateFromActivity();
+        /**getDateFromActivity();**/
     }
 
     protected void onDestroy() {
