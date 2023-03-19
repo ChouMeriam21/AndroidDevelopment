@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <string name="app_name">Ma Première Application</string>
+        <string name="nom">Nom</string>
+        <string name="pr_nom">Prénom</string>
+        <string name="date_de_naissance">Date de naissance</string>
+        <string name="ville_de_naissance">Ville de naissance</string>
+        <string name="reset_action">Mettre à jour</string>
+        <string name="validate">VALIDER</string>
+        <string name="tel">Téléphone</string>
+        <string name="ajouter">AJOUTER UN NUM</string>
+        <string name="departement">Département de naissance</string>
+        <string name="vide"></string>
+        <string name="wiki">Wikipédia Ville de Naissance</string>
+        <string name="share">Partager Ville de Naissance</string>
+        <string name="cancel">ANNULER</string>
+        <string name="pickDateActivity">PICK</string>
+        <string name="takePicture">PRENDRE PHOTO</string>
+</resources>

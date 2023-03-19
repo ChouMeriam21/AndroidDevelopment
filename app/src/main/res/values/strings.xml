@@ -15,4 +15,6 @@
     <string name="cancel">CANCEL</string>
     <string name="pickDateActivity">PICK</string>
     <string name="takePicture">PRENDRE PHOTO</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
